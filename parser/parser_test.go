@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/robertkrimen/otto/ast"
-	"github.com/robertkrimen/otto/file"
+	"github.com/rainycape/otto/ast"
+	"github.com/rainycape/otto/file"
 )
 
 func firstErr(err error) error {

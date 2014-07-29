@@ -1,6 +1,6 @@
 # file
 --
-    import "github.com/robertkrimen/otto/file"
+    import "github.com/rainycape/otto/file"
 
 Package file encapsulates the file abstractions used by the ast & parser.
 
@@ -107,4 +107,4 @@ String returns a string in one of several forms:
     -                   An invalid position without filename
 
 --
-**godocdown** http://github.com/robertkrimen/godocdown
+**godocdown** http://github.com/rainycape/godocdown
