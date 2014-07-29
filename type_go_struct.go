@@ -3,6 +3,8 @@ package otto
 import (
 	"encoding/json"
 	"reflect"
+	"unicode"
+	"unicode/utf8"
 )
 
 // FIXME Make a note about not being able to modify a struct unless it was
@@ -36,26 +38,24 @@ func _newGoStructObject(value reflect.Value) *_goStructObject {
 }
 
 func (self _goStructObject) getValue(name string) reflect.Value {
-	if validGoStructName(name) {
-		// Do not reveal hidden or unexported fields
-		if field := reflect.Indirect(self.value).FieldByName(name); (field != reflect.Value{}) {
-			return field
-		}
+	name = toGoName(name)
+	if field := reflect.Indirect(self.value).FieldByName(name); field.IsValid() {
+		return field
+	}
 
-		if method := self.value.MethodByName(name); (method != reflect.Value{}) {
-			return method
-		}
+	if method := self.value.MethodByName(name); method.IsValid() {
+		return method
 	}
 
 	return reflect.Value{}
 }
 
 func (self _goStructObject) field(name string) (reflect.StructField, bool) {
-	return reflect.Indirect(self.value).Type().FieldByName(name)
+	return reflect.Indirect(self.value).Type().FieldByName(toGoName(name))
 }
 
 func (self _goStructObject) method(name string) (reflect.Method, bool) {
-	return reflect.Indirect(self.value).Type().MethodByName(name)
+	return reflect.Indirect(self.value).Type().MethodByName(toGoName(name))
 }
 
 func (self _goStructObject) setValue(name string, value Value) bool {
@@ -83,11 +83,30 @@ func goStructGetOwnProperty(self *_object, name string) *_property {
 	return objectGetOwnProperty(self, name)
 }
 
-func validGoStructName(name string) bool {
-	if name == "" {
-		return false
+func toJavascriptName(name string) string {
+	if name != "" {
+		runes := []rune(name)
+		runes[0] = unicode.ToLower(runes[0])
+		name = string(runes)
 	}
-	return 'A' <= name[0] && name[0] <= 'Z' // TODO What about Unicode?
+	return name
+}
+
+func toGoName(name string) string {
+	if name != "" {
+		runes := []rune(name)
+		runes[0] = unicode.ToUpper(runes[0])
+		name = string(runes)
+	}
+	return name
+}
+
+func isExported(name string) bool {
+	if name != "" {
+		r, _ := utf8.DecodeRuneInString(name)
+		return r != utf8.RuneError && unicode.IsUpper(r)
+	}
+	return false
 }
 
 func goStructEnumerate(self *_object, all bool, each func(string) bool) {
@@ -96,8 +115,8 @@ func goStructEnumerate(self *_object, all bool, each func(string) bool) {
 	// Enumerate fields
 	for index := 0; index < reflect.Indirect(object.value).NumField(); index++ {
 		name := reflect.Indirect(object.value).Type().Field(index).Name
-		if validGoStructName(name) {
-			if !each(name) {
+		if isExported(name) {
+			if !each(toJavascriptName(name)) {
 				return
 			}
 		}
@@ -106,8 +125,8 @@ func goStructEnumerate(self *_object, all bool, each func(string) bool) {
 	// Enumerate methods
 	for index := 0; index < object.value.NumMethod(); index++ {
 		name := object.value.Type().Method(index).Name
-		if validGoStructName(name) {
-			if !each(name) {
+		if isExported(name) {
+			if !each(toJavascriptName(name)) {
 				return
 			}
 		}
@@ -128,7 +147,7 @@ func goStructCanPut(self *_object, name string) bool {
 
 func goStructPut(self *_object, name string, value Value, throw bool) {
 	object := self.value.(*_goStructObject)
-	if object.setValue(name, value) {
+	if object.setValue(toGoName(name), value) {
 		return
 	}
 

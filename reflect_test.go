@@ -120,7 +120,7 @@ func Test_reflectStruct(t *testing.T) {
 			test(`
                 delete abc.Def;
                 delete abc.abc;
-                [ abc.Def, abc.abc ];
+                [ abc.Def, abc._abc ];
             `, "451,")
 			is(abc.Def, 451)
 
