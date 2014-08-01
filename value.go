@@ -216,7 +216,7 @@ func (value Value) Class() string {
 	return value.value.(*_object).class
 }
 
-func (value Value) isArray() bool {
+func (value Value) IsArray() bool {
 	if value.kind != valueObject {
 		return false
 	}
