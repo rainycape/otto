@@ -265,6 +265,19 @@ func (value Value) isError() bool {
 	return value.value.(*_object).class == "Error"
 }
 
+func (value Value) Length() int {
+	if value.IsArray() {
+		return int(toUint32(value.value.(*_object).get("length")))
+	}
+	if value.IsObject() {
+		return len(value.Object().Keys())
+	}
+	if value.IsString() {
+		return len(value.string())
+	}
+	return 0
+}
+
 // ---
 
 func toValue_reflectValuePanic(value interface{}, kind reflect.Kind) {
