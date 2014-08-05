@@ -69,7 +69,7 @@ func TestScript(t *testing.T) {
 			is(script.String(), "// \n")
 			is(script.version, "")
 			is(script.program == nil, true)
-			is(script.filename, "")
+			is(script.Filename(), "")
 			is(script.src, "")
 
 			scriptVersion = version

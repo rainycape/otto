@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"errors"
+	"strings"
 
 	"github.com/rainycape/otto/parser"
 )
@@ -16,10 +17,9 @@ var scriptVersion = "2014-04-13/1"
 // Passing a Script value to a run method will evaluate the JavaScript.
 //
 type Script struct {
-	version  string
-	program  *_nodeProgram
-	filename string
-	src      string
+	version string
+	program *_nodeProgram
+	src     string
 }
 
 // Compile will parse the given source and return a Script value or nil and
@@ -43,18 +43,35 @@ func (self *Otto) Compile(filename string, src interface{}) (*Script, error) {
 		cmpl_program := cmpl_parse(program)
 
 		script := &Script{
-			version:  scriptVersion,
-			program:  cmpl_program,
-			filename: filename,
-			src:      string(src),
+			version: scriptVersion,
+			program: cmpl_program,
+			src:     string(src),
 		}
 
 		return script, nil
 	}
 }
 
+// Filename returns the Script filename, or the empty string
+// if no filename was specified when it was parsed.
+func (self *Script) Filename() string {
+	if self.program != nil && self.program.file != nil {
+		return self.program.file.Name()
+	}
+	return ""
+
+}
+
 func (self *Script) String() string {
-	return "// " + self.filename + "\n" + self.src
+	filename := "<unknown>"
+	if n := self.Filename(); n != "" {
+		filename = n
+	}
+	prefix := "// "
+	if strings.Contains(filename, "://") {
+		prefix = ""
+	}
+	return prefix + filename + "\n" + self.src
 }
 
 // MarshalBinary will marshal a script into a binary form. A marshalled script
@@ -70,10 +87,6 @@ func (self *Script) marshalBinary() ([]byte, error) {
 		return nil, err
 	}
 	err = encoder.Encode(self.program)
-	if err != nil {
-		return nil, err
-	}
-	err = encoder.Encode(self.filename)
 	if err != nil {
 		return nil, err
 	}
@@ -104,10 +117,6 @@ func (self *Script) unmarshalBinary(data []byte) error {
 	if err != nil {
 		goto error
 	}
-	err = decoder.Decode(&self.filename)
-	if err != nil {
-		goto error
-	}
 	err = decoder.Decode(&self.src)
 	if err != nil {
 		goto error
@@ -116,7 +125,6 @@ func (self *Script) unmarshalBinary(data []byte) error {
 error:
 	self.version = ""
 	self.program = nil
-	self.filename = ""
 	self.src = ""
 	return err
 }
