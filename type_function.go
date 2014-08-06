@@ -15,7 +15,7 @@ func defaultConstruct(fn *_object, argumentList []Value) Value {
 	object.prototype = prototype._object()
 
 	this := toValue_object(object)
-	value := fn.call(this, argumentList, false, nativeFrame)
+	value := fn.call(this, argumentList, false, nil)
 	if value.kind == valueObject {
 		return value
 	}
@@ -121,7 +121,11 @@ func (self *_object) isCall() bool {
 	return false
 }
 
-func (self *_object) call(this Value, argumentList []Value, eval bool, frame _frame) Value {
+func (self *_object) call(this Value, argumentList []Value, eval bool, frame *_frame) Value {
+	if frame == nil {
+		// Native frame
+		frame = nativeFrame
+	}
 	switch fn := self.value.(type) {
 
 	case _nativeFunctionObject:
@@ -150,7 +154,10 @@ func (self *_object) call(this Value, argumentList []Value, eval bool, frame _fr
 		defer func() {
 			rt.leaveScope()
 		}()
-		rt.scope.frame = frame
+		if !frame.native {
+			frame.file = fn.node.file
+		}
+		rt.scope.frame = *frame
 		callValue := rt.cmpl_call_nodeFunction(self, stash, fn.node, this, argumentList)
 		if value, valid := callValue.value.(_result); valid {
 			return value.value

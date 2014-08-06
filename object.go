@@ -87,7 +87,7 @@ func (self *_object) DefaultValue(hint _defaultValueHint) Value {
 		method := self.get(methodName)
 		// FIXME This is redundant...
 		if method.isCallable() {
-			result := method._object().call(toValue_object(self), nil, false, nativeFrame)
+			result := method._object().call(toValue_object(self), nil, false, nil)
 			if result.IsPrimitive() {
 				return result
 			}

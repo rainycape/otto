@@ -237,7 +237,7 @@ func builtinString_replace(call FunctionCall) Value {
 				}
 				argumentList[matchCount+0] = toValue_int(match[0])
 				argumentList[matchCount+1] = toValue_string(target)
-				replacement := replace.call(Value{}, argumentList, false, nativeFrame).string()
+				replacement := replace.call(Value{}, argumentList, false, nil).string()
 				result = append(result, []byte(replacement)...)
 				lastIndex = match[1]
 			}

@@ -222,7 +222,7 @@ func (self *_runtime) cmpl_evaluate_nodeCallExpression(node *_nodeCallExpression
 		at = _at(callee.idx)
 	}
 
-	frame := _frame{
+	frame := &_frame{
 		callee: name,
 		file:   self.scope.frame.file,
 	}

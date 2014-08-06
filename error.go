@@ -36,26 +36,36 @@ type _frame struct {
 	file   *file.File
 	offset int
 	callee string
+	native bool
 }
 
 var (
-	nativeFrame = _frame{}
+	nativeFrame = &_frame{native: true}
 )
+
+func newNativeFrame() *_frame {
+	return nativeFrame
+}
 
 type _at int
 
-func (fr _frame) location() string {
-	if fr.file == nil {
-		return "<unknown>"
-	}
-	path := fr.file.Name()
-	line, column := _position(fr.file, fr.offset)
+func (fr *_frame) location() string {
+	var str string
+	switch {
+	case fr.native:
+		str = "<native>"
+	case fr.file == nil:
+		str = "<unknown>"
+	default:
+		path := fr.file.Name()
+		line, column := _position(fr.file, fr.offset)
 
-	if path == "" {
-		path = "<anonymous>"
-	}
+		if path == "" {
+			path = "<anonymous>"
+		}
 
-	str := fmt.Sprintf("%s:%d:%d", path, line, column)
+		str = fmt.Sprintf("%s:%d:%d", path, line, column)
+	}
 
 	if fr.callee != "" {
 		str = fmt.Sprintf("%s (%s)", fr.callee, str)

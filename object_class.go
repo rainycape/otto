@@ -258,7 +258,7 @@ func objectPut(self *_object, name string, value Value, throw bool) {
 		if !canPut {
 			self.runtime.typeErrorResult(throw)
 		} else if setter != nil {
-			setter.call(toValue(self), []Value{value}, false, nativeFrame)
+			setter.call(toValue(self), []Value{value}, false, nil)
 		} else if property != nil {
 			property.value = value
 			self.defineOwnProperty(name, *property, throw)
@@ -281,7 +281,7 @@ func objectPut(self *_object, name string, value Value, throw bool) {
 		property = self.getProperty(name)
 		if property != nil {
 			if getSet, isAccessor := property.value.(_propertyGetSet); isAccessor {
-				getSet[1].call(toValue(self), []Value{value}, false, nativeFrame)
+				getSet[1].call(toValue(self), []Value{value}, false, nil)
 				return
 			}
 		}
@@ -293,7 +293,7 @@ func objectPut(self *_object, name string, value Value, throw bool) {
 			self.defineOwnProperty(name, *property, throw)
 		case _propertyGetSet:
 			if propertyValue[1] != nil {
-				propertyValue[1].call(toValue(self), []Value{value}, false, nativeFrame)
+				propertyValue[1].call(toValue(self), []Value{value}, false, nil)
 				return
 			}
 			if throw {

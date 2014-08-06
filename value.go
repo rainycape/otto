@@ -120,7 +120,7 @@ func (value Value) Call(this Value, argumentList ...interface{}) (Value, error) 
 func (value Value) call(rt *_runtime, this Value, argumentList ...interface{}) Value {
 	switch function := value.value.(type) {
 	case *_object:
-		return function.call(this, function.runtime.toValueArray(argumentList...), false, nativeFrame)
+		return function.call(this, function.runtime.toValueArray(argumentList...), false, nil)
 	}
 	if rt == nil {
 		panic("FIXME TypeError")

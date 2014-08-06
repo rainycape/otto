@@ -30,7 +30,7 @@ func builtinArray_toString(call FunctionCall) Value {
 	join := thisObject.get("join")
 	if join.isCallable() {
 		join := join._object()
-		return join.call(call.This, call.ArgumentList, false, nativeFrame)
+		return join.call(call.This, call.ArgumentList, false, nil)
 	}
 	return builtinObject_toString(call)
 }
@@ -382,7 +382,7 @@ func sortCompare(thisObject *_object, index0, index1 uint, compare *_object) int
 		return 1
 	}
 
-	return int(toInt32(compare.call(Value{}, []Value{x, y}, false, nativeFrame)))
+	return int(toInt32(compare.call(Value{}, []Value{x, y}, false, nil)))
 }
 
 func arraySortSwap(thisObject *_object, index0, index1 uint) {

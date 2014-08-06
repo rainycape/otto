@@ -33,7 +33,7 @@ func TestGlobal(t *testing.T) {
 
 			// FIXME enterGlobalScope
 			if false {
-				value := runtime.scope.lexical.getBinding("Object", false)._object().call(UndefinedValue(), []Value{toValue(runtime.newObject())}, false, nativeFrame)
+				value := runtime.scope.lexical.getBinding("Object", false)._object().call(UndefinedValue(), []Value{toValue(runtime.newObject())}, false, nil)
 				is(value.IsObject(), true)
 				is(value, "[object Object]")
 				is(value._object().prototype == runtime.global.ObjectPrototype, true)

@@ -79,7 +79,7 @@ func builtinFunction_apply(call FunctionCall) Value {
 	argumentList := call.Argument(1)
 	switch argumentList.kind {
 	case valueUndefined, valueNull:
-		return call.thisObject().call(this, nil, false, nativeFrame)
+		return call.thisObject().call(this, nil, false, nil)
 	case valueObject:
 	default:
 		panic(call.runtime.panicTypeError())
@@ -92,7 +92,7 @@ func builtinFunction_apply(call FunctionCall) Value {
 	for index := int64(0); index < length; index++ {
 		valueArray[index] = arrayObject.get(arrayIndexToString(index))
 	}
-	return thisObject.call(this, valueArray, false, nativeFrame)
+	return thisObject.call(this, valueArray, false, nil)
 }
 
 func builtinFunction_call(call FunctionCall) Value {
@@ -106,9 +106,9 @@ func builtinFunction_call(call FunctionCall) Value {
 		this = toValue_object(call.runtime.globalObject)
 	}
 	if len(call.ArgumentList) >= 1 {
-		return thisObject.call(this, call.ArgumentList[1:], false, nativeFrame)
+		return thisObject.call(this, call.ArgumentList[1:], false, nil)
 	}
-	return thisObject.call(this, nil, false, nativeFrame)
+	return thisObject.call(this, nil, false, nil)
 }
 
 func builtinFunction_bind(call FunctionCall) Value {
