@@ -321,9 +321,12 @@ func TestArray_sort(t *testing.T) {
             stu = [1,5,-10, 100, 8, 72, 401, 0.05].sort(function(x, y){
                 return x == y ? 0 : x < y ? -1 : 1
             });
+	    objs = [{a:2, b:3}, {a:1, b:10}, {a:100, b:0}].sort(function(x, y) {
+		return y.a * y.b - x.a * x.b;
+	    }).map(function(x) { return '' + x.a + ':' + x.b; });
 
-            [ abc, def, ghi, jkl, mno, pqr, stu ].join(";");
-        `, "0,1,2,3;0,1,2,3;;0;0,1;-10,0.05,1,100,401,5,72,8;-10,0.05,1,5,8,72,100,401")
+            [ abc, def, ghi, jkl, mno, pqr, stu, objs ].join(";");
+        `, "0,1,2,3;0,1,2,3;;0;0,1;-10,0.05,1,100,401,5,72,8;-10,0.05,1,5,8,72,100,401;1:10,2:3,100:0")
 
 		test(`Array.prototype.sort.length`, 1)
 	})
