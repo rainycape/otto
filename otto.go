@@ -230,6 +230,12 @@ import (
 	"github.com/rainycape/otto/registry"
 )
 
+type Mode int
+
+const (
+	RegExpErrorOnUse Mode = 1 << iota // Don't generate invalid regexp errors when parsing, only when using them
+)
+
 // Otto is the representation of the JavaScript runtime. Each instance of Otto has a self-contained namespace.
 type Otto struct {
 	// Interrupt is a channel for interrupting the runtime. You can use this to halt a long running execution, for example.
@@ -259,6 +265,14 @@ func (otto *Otto) clone() *Otto {
 	}
 	self.runtime.otto = self
 	return self
+}
+
+func (otto *Otto) Mode() Mode {
+	return otto.runtime.mode
+}
+
+func (otto *Otto) SetMode(mode Mode) {
+	otto.runtime.mode = mode
 }
 
 // Run will allocate a new JavaScript runtime, run the given source

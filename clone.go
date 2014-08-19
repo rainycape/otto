@@ -17,7 +17,7 @@ func (in *_runtime) clone() *_runtime {
 	in.lck.Lock()
 	defer in.lck.Unlock()
 
-	out := &_runtime{}
+	out := &_runtime{mode: in.mode}
 	clone := _clone{
 		runtime:      out,
 		_object:      make(map[*_object]*_object),

@@ -55,6 +55,7 @@ type _runtime struct {
 
 	labels []string // FIXME
 	lck    sync.Mutex
+	mode   Mode
 }
 
 func (self *_runtime) enterScope(scope *_scope) {
@@ -257,12 +258,20 @@ func (runtime *_runtime) newGoArray(value reflect.Value) *_object {
 	return self
 }
 
+func (runtime *_runtime) parserMode() parser.Mode {
+	var m parser.Mode
+	if runtime.mode&RegExpErrorOnUse != 0 {
+		m |= parser.IgnoreRegExpErrors
+	}
+	return m
+}
+
 func (runtime *_runtime) parse(filename string, src interface{}) (*ast.Program, error) {
-	return parser.ParseFile(nil, filename, src, 0)
+	return parser.ParseFile(nil, filename, src, runtime.parserMode())
 }
 
 func (runtime *_runtime) cmpl_parse(filename string, src interface{}) (*_nodeProgram, error) {
-	program, err := parser.ParseFile(nil, filename, src, 0)
+	program, err := parser.ParseFile(nil, filename, src, runtime.parserMode())
 	if err != nil {
 		return nil, err
 	}

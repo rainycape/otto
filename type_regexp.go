@@ -15,6 +15,7 @@ type _regExpObject struct {
 	multiline         bool
 	source            string
 	flags             string
+	err               error
 }
 
 func (runtime *_runtime) newRegExpObject(pattern string, flags string) *_object {
@@ -52,7 +53,10 @@ func (runtime *_runtime) newRegExpObject(pattern string, flags string) *_object 
 
 	re2pattern, err := parser.TransformRegExp(pattern)
 	if err != nil {
-		panic(runtime.panicTypeError("Invalid regular expression: %s", err.Error()))
+		self.value = _regExpObject{
+			err: err,
+		}
+		return self
 	}
 	if len(re2flags) > 0 {
 		re2pattern = fmt.Sprintf("(?%s:%s)", re2flags, re2pattern)
@@ -60,7 +64,10 @@ func (runtime *_runtime) newRegExpObject(pattern string, flags string) *_object 
 
 	regularExpression, err := regexp.Compile(re2pattern)
 	if err != nil {
-		panic(runtime.panicSyntaxError("Invalid regular expression: %s", err.Error()[22:]))
+		self.value = _regExpObject{
+			err: err,
+		}
+		return self
 	}
 
 	self.value = _regExpObject{
@@ -88,6 +95,10 @@ func execRegExp(this *_object, target string) (match bool, result []int) {
 	if this.class != "RegExp" {
 		panic(this.runtime.panicTypeError("Calling RegExp.exec on a non-RegExp object"))
 	}
+	re := this.regExpValue()
+	if re.err != nil {
+		panic(this.runtime.panicTypeError("Invalid regular expression: %s", re.err.Error()))
+	}
 	lastIndex := this.get("lastIndex").number().int64
 	index := lastIndex
 	global := this.get("global").bool()
@@ -96,7 +107,7 @@ func execRegExp(this *_object, target string) (match bool, result []int) {
 	}
 	if 0 > index || index > int64(len(target)) {
 	} else {
-		result = this.regExpValue().regularExpression.FindStringSubmatchIndex(target[index:])
+		result = re.regularExpression.FindStringSubmatchIndex(target[index:])
 	}
 	if result == nil {
 		//this.defineProperty("lastIndex", toValue_(0), 0111, true)
