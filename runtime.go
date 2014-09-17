@@ -219,8 +219,28 @@ func (self *_runtime) toValue(value interface{}) Value {
 				// TODO Maybe cache this?
 				return toValue_object(self.newNativeFunction("", func(call FunctionCall) Value {
 					in := make([]reflect.Value, len(call.ArgumentList))
-					for i, value := range call.ArgumentList {
-						in[i] = reflect.ValueOf(value.export())
+					typ := value.Type()
+					for i, arg := range call.ArgumentList {
+						exported := arg.export()
+						if exported == nil {
+							// Make the argument a zero for the expected argument type, otherwise
+							// the Call will panic because reflect.ValueOf will return an invalid
+							// reflect.Value when nil is passed in.
+							var argType reflect.Type
+							if typ.IsVariadic() {
+								numIn := typ.NumIn()
+								if i < numIn-1 {
+									argType = typ.In(i)
+								} else {
+									argType = typ.In(numIn - 1).Elem()
+								}
+							} else {
+								argType = typ.In(i)
+							}
+							in[i] = reflect.Zero(argType)
+							continue
+						}
+						in[i] = reflect.ValueOf(exported)
 					}
 
 					out := value.Call(in)
